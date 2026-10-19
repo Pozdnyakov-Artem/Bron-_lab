@@ -1,4 +1,4 @@
-# Демонстрационный каталог и выданные аккаунты. Пароли см. README.
+# Демонстрационный каталог и аккаунты. Публичные тестовые пароли см. README.
 version: 1
 department: Лаборатория учебных проектов
 timezone: Asia/Novosibirsk
@@ -83,6 +83,10 @@ admin_users:
   name: Мария Волкова
   role: admin
   password_hash: scrypt:32768:8:1$hhQNGWvhoKNyBRAK$5df8f3b2ab3ad0ddd00aa515b8ef9afbffd5796c9721159032f6467bf5817552ec1313d90c994faba7611d9d8f6a0fe6428a9202bd140029bf66816383949bf7
+- id: admin-demo
+  name: Тестовый администратор
+  role: admin
+  password_hash: scrypt:32768:8:1$mStBW5QthD8AKIbK$1dae3b79aed933a8540c81aaed1c17875c210a95b462f484bf1d4c9c891516c78c2b8a698e429d5a57c224f756ebb25ffe74f5da3ac44256bfc7fe8b447bb4cb
 users:
 - id: student-01
   name: Александр Иванов
@@ -92,4 +96,8 @@ users:
   name: Елена Петрова
   role: teacher
   password_hash: scrypt:32768:8:1$Qx1k73PuDHSgwDo7$8699d8aa498650b74f888b93da630296f949425affe701a02aec6e867d50c2a939238327dba666bf4d1ffcd76e3f4a8669ffa992aa575df6b4fbb8345682382f
+- id: teacher-demo
+  name: Тестовый преподаватель
+  role: teacher
+  password_hash: scrypt:32768:8:1$fd73ItxYwRMmojSX$b9116efa39b4c8c5178143965fcbbe0579b0bdcde0076d2869085ad4ad98f1d2e12af487fe5b3ebe4c92ba0ae0f0170d690f08e7925444bc432e941c0eb97b10
 bookings: []
