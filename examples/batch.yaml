@@ -1,0 +1,107 @@
+# Пример пакетной загрузки. Для своей даты измените date.
+version: 1
+department: Лаборатория учебных проектов
+timezone: Asia/Novosibirsk
+work_hours:
+  start: 09:00
+  end: '18:00'
+database: ../data/bronylab.sqlite3
+log_file: ../data/bronylab.log
+equipment:
+- id: camera-01
+  name: Камера Sony A7
+  location: Медиакласс, ауд. 312
+  description: Полнокадровая камера для учебной съёмки. Объектив 28–70 мм, карта памяти
+    и аккумулятор в комплекте.
+  category: Камеры
+  status: available
+- id: camera-02
+  name: Камера Canon EOS R50
+  location: Медиакласс, ауд. 312
+  description: Компактная беззеркальная камера для интервью, видеопроектов и репортажной
+    съёмки.
+  category: Камеры
+  status: available
+- id: projector-01
+  name: Проектор Epson EB-W06
+  location: Лаборатория, ауд. 210
+  description: Переносной проектор для занятий и защиты проектов. HDMI, разрешение
+    WXGA.
+  category: Проекторы
+  status: available
+- id: projector-02
+  name: Проектор BenQ TH585
+  location: Медиакласс, ауд. 312
+  description: Full HD проектор для презентаций и просмотра учебных материалов.
+  category: Проекторы
+  status: available
+- id: microscope-01
+  name: Микроскоп Levenhuk 320
+  location: Лаборатория, ауд. 214
+  description: Оптический микроскоп для учебных исследований. Увеличение до 1000×.
+  category: Лабораторное
+  status: available
+- id: oscilloscope-01
+  name: Осциллограф Rigol DS1054Z
+  location: Лаборатория, ауд. 210
+  description: Четырёхканальный прибор для изучения и измерения электрических сигналов.
+  category: Лабораторное
+  status: available
+- id: mic-01
+  name: Микрофон Rode NT-USB
+  location: Медиакласс, ауд. 312
+  description: USB-микрофон для записи подкастов, озвучки и интервью. Поп-фильтр в
+    комплекте.
+  category: Аудио
+  status: available
+- id: recorder-01
+  name: Рекордер Zoom H5
+  location: Медиакласс, ауд. 312
+  description: Портативный рекордер для записи звука на выездных учебных проектах.
+  category: Аудио
+  status: available
+- id: laptop-01
+  name: Ноутбук Lenovo ThinkPad
+  location: Лаборатория, ауд. 210
+  description: Рабочая станция для презентаций и обработки результатов экспериментов.
+  category: Компьютеры
+  status: available
+- id: tablet-01
+  name: Планшет Wacom Intuos
+  location: Медиакласс, ауд. 312
+  description: Графический планшет для иллюстраций, схем и цифрового прототипирования.
+  category: Компьютеры
+  status: available
+- id: camera-service
+  name: Камера на обслуживании
+  location: Медиакласс, ауд. 312
+  description: Недоступна в пилоте.
+  category: Камеры
+  status: hidden
+admin_users:
+- id: admin-01
+  name: Мария Волкова
+  role: admin
+  password_hash: scrypt:32768:8:1$hhQNGWvhoKNyBRAK$5df8f3b2ab3ad0ddd00aa515b8ef9afbffd5796c9721159032f6467bf5817552ec1313d90c994faba7611d9d8f6a0fe6428a9202bd140029bf66816383949bf7
+users:
+- id: student-01
+  name: Александр Иванов
+  role: student
+  password_hash: scrypt:32768:8:1$dDDRXcoRci8mPZYf$61c50d4bb157156546d2fb9879171409323fb77e5d2725c9cb4ee6da6e9b091e16cb509563bdfc95a3b3846d4a8fa8ad5d26976675dd36e131c79f976964b42e
+- id: teacher-01
+  name: Елена Петрова
+  role: teacher
+  password_hash: scrypt:32768:8:1$Qx1k73PuDHSgwDo7$8699d8aa498650b74f888b93da630296f949425affe701a02aec6e867d50c2a939238327dba666bf4d1ffcd76e3f4a8669ffa992aa575df6b4fbb8345682382f
+bookings:
+- id: demo-camera-01
+  equipment_id: camera-01
+  user_id: teacher-01
+  date: '2026-10-06'
+  start_time: '10:00'
+  end_time: '11:30'
+- id: demo-projector-01
+  equipment_id: projector-01
+  user_id: student-01
+  date: '2026-10-06'
+  start_time: '14:00'
+  end_time: '16:00'

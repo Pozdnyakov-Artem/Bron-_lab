@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="theme-color" content="#245c4b">
+  <title>БроньЛаб — оборудование для ваших идей</title>
+  <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css?v=20261019-2">
+  <script src="/static/app.js?v=20261019-2" defer></script>
+</head>
+<body>
+  <div id="boot" class="boot">БроньЛаб · загружаем лабораторию…</div>
+  <section id="login-view" class="login-view" hidden>
+    <div class="login-story">
+      <a class="brand" href="/"><img src="/static/logo.svg" alt="" width="38" height="38">БроньЛаб<span class="beta">пилот</span></a>
+      <div class="story-content"><span class="eyebrow">ВАША УЧЕБНАЯ ЛАБОРАТОРИЯ</span>
+        <h1>Больше идей.<br>Меньше<br> <em>переписки.</em></h1>
+        <p>Камера для съёмки, проектор для защиты, прибор для эксперимента. Найдите свободное время и забронируйте всё в одном месте.</p>
+        <div class="story-card"><img src="/static/camera.svg" alt="Иллюстрация камеры" width="125" height="95"><div><span class="tiny">ОБОРУДОВАНИЕ ДЛЯ ВАШИХ ИДЕЙ</span><strong>От замысла к практике</strong><span>Каталог → свободное время → бронь</span></div></div>
+      </div>
+      <div class="story-footer"><span class="dot"></span> {{ department }}<span>01 / MVP</span></div>
+    </div>
+    <div class="login-form-wrap"><div class="auth-panel"><div class="auth-tabs" role="group" aria-label="Доступ к лаборатории"><button id="tab-login" type="button" class="active" aria-pressed="true">Вход</button><button id="tab-register" type="button" aria-pressed="false">Регистрация</button></div><form id="login-form" class="login-form">
+      <span class="eyebrow">РАДЫ ВАС ВИДЕТЬ</span><h2>Войти в лабораторию</h2>
+      <p class="muted">Войдите с почтой НГУ или учётной записью, которую выдал сотрудник.</p>
+      <label for="user-id">Логин или почта НГУ</label><input id="user-id" name="username" autocomplete="username" placeholder="name@g.nsu.ru или student-01" required maxlength="254">
+      <label for="password">Пароль</label><div class="password-wrap"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Ваш пароль" required><button id="show-password" type="button" aria-label="Показать пароль">Показать</button></div>
+      <p id="login-error" class="form-error" role="alert" hidden></p>
+      <button type="submit" class="primary" id="login-submit">Войти <span aria-hidden="true">→</span></button>
+      <div class="login-note"><span aria-hidden="true">↗</span><p>Учитесь в НГУ? Откройте вкладку «Регистрация».<br>Для доступа администратора обратитесь к ответственному.</p></div>
+    </form><form id="register-form" class="login-form" hidden>
+      <span class="eyebrow">ДЛЯ СТУДЕНТОВ НГУ</span><h2>Создать аккаунт</h2><p class="muted">Зарегистрируйтесь с университетской почтой @g.nsu.ru и бронируйте оборудование.</p>
+      <label for="register-name">Имя и фамилия</label><input id="register-name" name="name" autocomplete="name" required maxlength="150" placeholder="Как к вам обращаться">
+      <label for="register-email">Почта НГУ</label><input id="register-email" name="email" type="email" autocomplete="username" required maxlength="254" placeholder="name@g.nsu.ru"><p class="field-hint">Принимаются только адреса @g.nsu.ru. Письмо-подтверждение не отправляется.</p>
+      <label for="register-password">Придумайте пароль</label><input id="register-password" type="password" name="new-password" autocomplete="new-password" required minlength="10" maxlength="128" placeholder="От 10 до 128 символов">
+      <label for="register-confirm">Повторите пароль</label><input id="register-confirm" type="password" name="password-confirm" autocomplete="new-password" required minlength="10" maxlength="128" placeholder="Ещё раз тот же пароль">
+      <p id="register-error" class="form-error" role="alert" hidden></p><button type="submit" class="primary" id="register-submit">Зарегистрироваться <span aria-hidden="true">→</span></button><p class="field-hint">После регистрации вы получите роль студента и сразу войдёте в каталог. Почта будет вашим логином.</p>
+    </form><a href="/help" target="_blank" rel="noopener" class="help-link">Инструкция пользователя ↗</a></div></div>
+  </section>
+  <div id="app-view" class="app-shell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="/"><img src="/static/logo.svg" alt="" width="35" height="35">БроньЛаб</a>
+      <div class="lab-label"><span class="tiny">РАБОЧЕЕ ПРОСТРАНСТВО</span><strong id="department-label"></strong><span class="pilot-label">Пилотная версия</span></div>
+      <nav aria-label="Основная навигация"><button class="nav-item active" id="nav-catalog" aria-current="page"><span aria-hidden="true">▦</span> Каталог оборудования <span class="nav-arrow">↗</span></button><button class="nav-item" id="nav-mine"><span aria-hidden="true">▤</span> Мои брони <span id="mine-count" class="count"></span></button></nav>
+      <div class="sidebar-guide"><div class="guide-symbol" aria-hidden="true">✳</div><strong>Всё готово для работы</strong><p>Выберите прибор, найдите свободный интервал и приходите к месту выдачи.</p><span>Выдача — у ответственного</span></div>
+      <div class="sidebar-bottom"><div class="user-row"><span id="avatar" class="avatar"></span><div><strong id="user-name"></strong><span id="user-role"></span></div></div><button id="logout" class="logout">Выйти из аккаунта <span aria-hidden="true">↗</span></button></div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar"><span id="breadcrumb">Лаборатория <span>/</span> Каталог</span><div class="topbar-right"><span id="connection" class="connection"><span class="dot"></span> Данные актуальны</span><span class="topbar-date" id="today-label"></span></div></header>
+      <main>
+        <section id="catalog-view">
+          <div class="hero"><div><span class="eyebrow">МЕСТО, ГДЕ НАЧИНАЮТСЯ ИДЕИ</span><h1>Техника есть.<br>Дело за вами.</h1><p>Выберите оборудование для занятия или проекта.<br>Свободное время и подтверждение — в пару шагов.</p><div class="hero-meta"><span class="dot"></span><span id="hours-label"></span><span class="hero-divider">/</span><span id="zone-label"></span></div></div><div class="hero-art" aria-hidden="true"><div class="art-ring"></div><img src="/static/camera.svg" alt=""><span class="art-sticker">ПЛАНИРУЙТЕ.<br>СОЗДАВАЙТЕ.</span><span class="art-spark">✳</span></div></div>
+          <div class="stats"><div><span class="stat-icon">▦</span><div><strong id="stat-total">—</strong><span>приборов в каталоге</span></div></div><div><span class="stat-icon mint">◷</span><div><strong id="stat-free">—</strong><span>свободны весь выбранный день</span></div></div><div><span class="stat-icon sand">▤</span><div><strong id="stat-mine">—</strong><span>ваших предстоящих броней</span></div></div></div>
+          <div class="section-title"><div><h2>Каталог оборудования <span id="catalog-count"></span></h2><p>Всё необходимое для вашей следующей работы</p></div><div class="catalog-actions"><button id="add-equipment" class="add-button" hidden>+ Добавить предмет</button><button id="refresh" class="text-button">↻ Обновить</button></div></div>
+          <div class="filters"><label class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" aria-label="Поиск оборудования" placeholder="Название, описание или аудитория"></label><label class="date-filter"><span>Дата брони</span><input type="date" id="catalog-date" required aria-label="Дата брони"></label></div>
+          <div id="categories" class="categories" role="group" aria-label="Категории оборудования"></div>
+          <p id="catalog-error" role="alert" class="form-error" hidden></p>
+          <div id="equipment-grid" class="equipment-grid" aria-live="polite"></div>
+          <div id="catalog-empty" class="empty" hidden><span aria-hidden="true">⌕</span><h3>Ничего не нашлось</h3><p>Попробуйте другое название или выберите все категории.</p></div>
+          <div class="catalog-footer"><span>Бронь подтверждается сразу после проверки расписания</span><span>Физическая выдача — у сотрудника лаборатории</span></div>
+        </section>
+        <section id="mine-view" hidden><div class="page-heading"><span class="eyebrow">ВАШИ ПЛАНЫ</span><h1>Мои брони</h1><p>Оборудование, время и место получения — под рукой.</p></div><div class="notice">Перед получением обратитесь к ответственному сотруднику. Подтверждение брони резервирует время использования.</div><div id="my-bookings" class="bookings-list"></div><div id="mine-empty" class="empty" hidden><span>▤</span><h3>Пока нет броней</h3><p>Найдите оборудование в каталоге и выберите свободное время.</p><button id="to-catalog" class="primary">Перейти в каталог →</button></div></section>
+      </main>
+      <footer class="page-footer"><span>БроньЛаб © 2026 · <a href="/help" target="_blank" rel="noopener">Инструкция пользователя ↗</a></span><span>Одна лаборатория. Общее оборудование. Больше возможностей.</span></footer>
+    </div>
+  </div>
+  <dialog id="booking-dialog" aria-labelledby="detail-title"><div class="dialog-top"><span class="eyebrow">БРОНИРОВАНИЕ ОБОРУДОВАНИЯ</span><button id="close-dialog" class="close-button" aria-label="Закрыть карточку">×</button></div><div class="detail-layout"><div class="detail-info"><div class="detail-art"><img id="detail-image" src="/static/camera.svg" alt=""></div><span id="detail-category" class="tiny"></span><h2 id="detail-title"></h2><p id="detail-description"></p><div class="location-block"><span class="tiny">МЕСТО ПОЛУЧЕНИЯ</span><strong id="detail-location"></strong><p>Оборудование выдаёт ответственный сотрудник.</p></div></div><form id="booking-form" class="booking-form"><h3>Выберите свободное время</h3><p class="muted" id="detail-hours"></p><label for="detail-date">Дата</label><input type="date" id="detail-date" required><div class="schedule-heading"><strong>Занятость на эту дату</strong><span id="schedule-state"></span></div><div id="timeline" class="timeline" aria-hidden="true"></div><div id="occupancy" class="occupancy" aria-live="polite"></div><div class="free-slots-label">Свободные интервалы</div><div id="free-slots" class="free-slots"></div><div class="time-fields"><div><label for="start-time">Начало</label><input type="time" id="start-time" required step="60"></div><span aria-hidden="true">→</span><div><label for="end-time">Окончание</label><input type="time" id="end-time" required step="60"></div></div><p id="booking-error" class="form-error" role="alert" hidden></p><button type="submit" id="book-submit" class="primary">Подтвердить бронь <span aria-hidden="true">→</span></button><p class="booking-note">Бронь на один день, в рабочие часы лаборатории.<br>При совпадении времени первая подтверждённая заявка получает приоритет.</p></form></div></dialog>
+  <dialog id="equipment-dialog" class="equipment-dialog" aria-labelledby="equipment-title"><div class="dialog-top"><span class="eyebrow">ДЛЯ АДМИНИСТРАТОРА</span><button type="button" id="close-equipment" class="close-button" aria-label="Закрыть добавление предмета">×</button></div><form id="equipment-form" class="equipment-form"><h2 id="equipment-title">Добавить предмет</h2><p class="muted">Новая карточка сразу появится в общем каталоге.</p><label for="equipment-name">Название предмета</label><input id="equipment-name" required maxlength="150" placeholder="Например, Штатив Manfrotto Compact"><label for="equipment-location">Место получения</label><input id="equipment-location" required maxlength="150" placeholder="Например, Медиакласс, ауд. 312"><label for="equipment-category">Категория</label><input id="equipment-category" required maxlength="80" list="equipment-categories" placeholder="Выберите или введите свою"><datalist id="equipment-categories"></datalist><label for="equipment-description">Описание <span class="muted">(необязательно)</span></label><textarea id="equipment-description" rows="4" maxlength="2000" placeholder="Характеристики и комплектация"></textarea><p class="field-hint">В пилоте — до 30 предметов, включая скрытые. Карточки сохраняются на сервере.</p><p id="equipment-error" class="form-error" role="alert" hidden></p><button type="submit" id="equipment-submit" class="primary">Добавить в каталог <span aria-hidden="true">→</span></button></form></dialog>
+  <div id="toast" class="toast" role="status" hidden><span aria-hidden="true">✓</span><div><strong id="toast-title">Бронь подтверждена</strong><p id="toast-message"></p></div><button id="close-toast" aria-label="Закрыть уведомление">×</button></div>
+  <noscript>Для бронирования включите JavaScript в браузере.</noscript>
+</body>
+</html>
