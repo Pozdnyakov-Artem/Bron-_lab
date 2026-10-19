@@ -2,6 +2,15 @@
 const $ = id => document.getElementById(id);
 const state = {user:null, equipment:[], mine:[], occupancy:new Map(), category:'Все', date:'', today:'', csrf:document.querySelector('meta[name="csrf-token"]').content, hours:{start:'09:00',end:'18:00'}, selected:null, detailReady:false, catalogEpoch:0, detailEpoch:0, submitting:false};
 const roleNames = {student:'Студент',teacher:'Преподаватель',admin:'Администратор'};
+function updateClock(settings){
+  state.clock=settings;state.today=settings.today;state.earliestDate=settings.earliest_date;state.earliestTime=settings.earliest_time;
+  $('detail-date').min=state.today;
+  const localTime=settings.now?.slice(11,16)||'';
+  $('today-label').textContent=`${numberDate(state.today)} · ${localTime} НСК`;
+  $('zone-label').textContent=`Новосибирск · ${localTime} (UTC+7)`;
+  $('detail-hours').textContent=`${state.hours.start}–${state.hours.end} · Сейчас ${localTime} в Новосибирске`;
+}
+function earliestStart(date){return date===state.earliestDate?state.earliestTime:date<state.earliestDate?'24:00':state.hours.start;}
 const numberDate = date => new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long'}).format(new Date(date+'T12:00:00'));
 const shortMonth = date => new Intl.DateTimeFormat('ru-RU',{month:'short'}).format(new Date(date+'T12:00:00')).replace('.','');
 const mins = time => Number(time.slice(0,2))*60+Number(time.slice(3));
@@ -13,6 +22,7 @@ async function api(path,options={}){
   const response=await fetch(path,{...options,headers:{'Content-Type':'application/json','X-CSRF-Token':state.csrf,...options.headers}});
   let data;try{data=await response.json();}catch{throw new Error('Сервер недоступен. Попробуйте обновить страницу.');}
   if(data.csrf_token)state.csrf=data.csrf_token;
+  if(data.now&&data.today)updateClock(data);
   if(!response.ok){
     if(response.status===401 && state.user){state.user=null;showLogin();}
     const error=new Error(data.error?.message||'Не удалось выполнить запрос');error.code=data.error?.code;throw error;
@@ -37,6 +47,7 @@ async function showApp(){
   $('hours-label').textContent=`Рабочие часы ${state.hours.start}–${state.hours.end}`;$('zone-label').textContent=state.timezone;
   $('detail-hours').textContent=`${state.hours.start}–${state.hours.end} · ${state.timezone}`;
   for(const id of ['start-time','end-time']){$(id).min=state.hours.start;$(id).max=state.hours.end;}
+  updateClock(state.clock);
   navigate('catalog');await refresh(true);
 }
 async function initialize(){
@@ -61,7 +72,7 @@ function renderCatalog(){
   $('catalog-empty').hidden=items.length>0;
   $('equipment-grid').replaceChildren(...items.map(item=>{
     const intervals=state.occupancy.get(item.id);const free=intervals?.length===0;const unknown=!intervals;const card=document.createElement('article');card.className='equipment-card';
-    const remaining=intervals?Math.max(0,mins(state.hours.end)-mins(state.hours.start)-intervals.reduce((n,b)=>n+mins(b.end_time)-mins(b.start_time),0)):0;
+    const remaining=intervals?gaps(intervals,state.date).reduce((n,[a,b])=>n+mins(b)-mins(a),0):0;
     card.innerHTML=`<div class="card-art ${art(item)}"><span class="availability-badge ${free?'':'busy'}"><span class="dot"></span>${unknown?'Расписание недоступно':free?'Свободно весь день':remaining===0?'День занят':'Есть занятые интервалы'}</span><img src="/static/${art(item)}.svg" alt="" loading="lazy"></div><div class="card-content"><span class="tiny">${escape(item.category)}</span><h3>${escape(item.name)}</h3><p class="card-location">${escape(item.location)}</p><p class="card-description">${escape(item.description)}</p></div><div class="card-bottom"><span>${unknown?'Проверьте расписание':`${Math.floor(remaining/60)} ч ${remaining%60?remaining%60+' мин ':''}свободно`}</span><button type="button" aria-label="Забронировать ${escape(item.name)}">Забронировать ↗</button></div>`;
     card.querySelector('button').onclick=()=>openDetail(item);return card;
   }));
@@ -80,14 +91,15 @@ async function refresh(initial=false){
     const date=state.date;
     const results=await Promise.all(catalog.equipment.map(async item=>[item.id,(await api(`/api/equipment/${encodeURIComponent(item.id)}/bookings?date=${date}`)).bookings]));
     if(epoch!==state.catalogEpoch||!state.user)return;
-    state.today=settings.today;$('detail-date').min=state.today;$('today-label').textContent=numberDate(state.today);
+    updateClock(settings);
     state.equipment=catalog.equipment;state.mine=mine.bookings;state.occupancy=new Map(results);
     renderCategories();renderCatalog();renderMine();online(true);showError('catalog-error','');
   }catch(error){if(epoch===state.catalogEpoch){online(false);showError('catalog-error',error.message);}}
   finally{if(epoch===state.catalogEpoch)$('refresh').disabled=false;}
 }
-function gaps(intervals){
-  const result=[];let position=state.hours.start;
+function gaps(intervals,date){
+  const result=[];let position=state.hours.start>earliestStart(date)?state.hours.start:earliestStart(date);
+  if(position>=state.hours.end)return result;
   for(const interval of intervals){if(position<interval.start_time)result.push([position,interval.start_time]);if(position<interval.end_time)position=interval.end_time;}
   if(position<state.hours.end)result.push([position,state.hours.end]);return result;
 }
@@ -100,14 +112,18 @@ async function openDetail(item){
 async function loadDetail(resetTimes=false){
   const epoch=++state.detailEpoch;state.detailReady=false;$('book-submit').disabled=true;$('schedule-state').textContent='Обновляем…';
   $('occupancy').textContent='Проверяем расписание…';$('timeline').replaceChildren();$('free-slots').replaceChildren();
-  if($('detail-date').value<state.today){showError('booking-error','Нельзя бронировать на прошедшую дату. Выберите сегодня или более поздний день');$('schedule-state').textContent='Прошедшая дата';$('occupancy').textContent='Выберите другую дату';return;}
   try{
+    await api('/api/session');
+    if(epoch!==state.detailEpoch||!$('booking-dialog').open)return;
+    if($('detail-date').value<state.today){showError('booking-error','Нельзя бронировать на прошедшую дату. Выберите сегодня или более поздний день');$('schedule-state').textContent='Прошедшая дата';$('occupancy').textContent='Выберите другую дату';return;}
+    const minimum=earliestStart($('detail-date').value);
+    $('start-time').min=minimum>state.hours.start?(minimum>state.hours.end?state.hours.end:minimum):state.hours.start;
     const data=await api(`/api/equipment/${encodeURIComponent(state.selected.id)}/bookings?date=${$('detail-date').value}`);
     if(epoch!==state.detailEpoch||!$('booking-dialog').open)return;
-    const intervals=data.bookings;const free=gaps(intervals);
+    const intervals=data.bookings;const free=gaps(intervals,$('detail-date').value);
     $('schedule-state').textContent=numberDate($('detail-date').value);
     $('occupancy').replaceChildren(...intervals.map(b=>{const span=document.createElement('span');span.className='occupied-tag';span.textContent=`${b.start_time}–${b.end_time} · занято`;return span;}));
-    if(!intervals.length)$('occupancy').textContent='Весь рабочий день свободен';
+    if(!intervals.length)$('occupancy').textContent='Занятых интервалов нет';
     const total=mins(state.hours.end)-mins(state.hours.start);
     $('timeline').replaceChildren(...intervals.map(b=>{const span=document.createElement('span');span.className='timeline-block';span.style.left=`${(mins(b.start_time)-mins(state.hours.start))/total*100}%`;span.style.width=`${(mins(b.end_time)-mins(b.start_time))/total*100}%`;return span;}));
     $('free-slots').replaceChildren(...free.map(([start,end])=>{const button=document.createElement('button');button.type='button';button.className='slot';button.textContent=`${start}–${end}`;button.onclick=()=>{setTimes(start,end);showError('booking-error','');};return button;}));
@@ -168,7 +184,7 @@ $('booking-form').addEventListener('submit',async event=>{
   const payload={equipment_id:state.selected.id,date:$('detail-date').value,start_time:$('start-time').value,end_time:$('end-time').value};const name=state.selected.name;
   state.submitting=true;state.detailReady=false;$('book-submit').disabled=true;$('book-submit').textContent='Подтверждаем…';
   try{const result=await api('/api/bookings',{method:'POST',body:JSON.stringify(payload)});$('booking-dialog').close();toast(`${result.action==='SKIP'?'Уже в ваших бронях: ':''}${name} · ${numberDate(payload.date)} · ${payload.start_time}–${payload.end_time}`);await refresh();}
-  catch(error){if($('booking-dialog').open){if(error.code==='PAST_DATE'){const settings=await api('/api/session');state.today=settings.today;$('detail-date').min=state.today;}await loadDetail(false);showError('booking-error',error.message);}}
+  catch(error){if($('booking-dialog').open){await loadDetail(false);showError('booking-error',error.message);}}
   finally{state.submitting=false;$('book-submit').innerHTML='Подтвердить бронь <span aria-hidden="true">→</span>';}
 });
 $('close-toast').onclick=()=>$('toast').hidden=true;

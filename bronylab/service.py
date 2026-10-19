@@ -3,15 +3,28 @@ import json
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from .config import clock, day, identifier
 from .errors import LabError
 
 
+def department_now(config):
+    return datetime.now(ZoneInfo(config["timezone"]))
+
+
 def department_today(config):
     """The booking date is evaluated in the department's timezone on every request."""
-    return datetime.now(ZoneInfo(config["timezone"])).strftime("%Y-%m-%d")
+    return department_now(config).strftime("%Y-%m-%d")
+
+
+def booking_clock(config):
+    now = department_now(config)
+    earliest = now.replace(second=0, microsecond=0)
+    if now.second or now.microsecond:
+        earliest += timedelta(minutes=1)
+    return {"today": now.strftime("%Y-%m-%d"), "now": now.isoformat(),
+            "earliest_date": earliest.strftime("%Y-%m-%d"), "earliest_time": earliest.strftime("%H:%M")}
 
 
 def make_logger(path):
@@ -92,8 +105,11 @@ class BookingService:
             if duplicate:
                 con.rollback()
                 return {"action": "SKIP", "booking": dict(duplicate)}
-            if item["date"] < department_today(self.config):
+            current = booking_clock(self.config)
+            if item["date"] < current["today"]:
                 raise LabError("PAST_DATE", "Нельзя бронировать на прошедшую дату. Выберите сегодня или более поздний день")
+            if (item["date"], item["start_time"]) < (current["earliest_date"], current["earliest_time"]):
+                raise LabError("PAST_TIME", f"Нельзя бронировать на прошедшее время. Сейчас {current['now'][11:16]} ({self.config['timezone']}); выберите более позднее начало")
             conflict = con.execute("""SELECT 1 FROM bookings WHERE equipment_id=? AND date=?
                 AND start_time < ? AND end_time > ?""", (item["equipment_id"], item["date"], item["end_time"], item["start_time"])).fetchone()
             if conflict:

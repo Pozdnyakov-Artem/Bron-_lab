@@ -13,7 +13,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .config import load_config, day
 from .errors import LabError
 from .repository import Repository
-from .service import BookingService, audit, make_logger, department_today
+from .service import BookingService, audit, make_logger, booking_clock
 from .validation import registration, equipment as validate_equipment
 
 
@@ -120,7 +120,7 @@ def create_app(config_path, test_config=None):
         user = current_user()
         return jsonify(user={key: user[key] for key in ("id", "name", "role")} if user else None,
                        csrf_token=csrf(), work_hours=config["work_hours"], timezone=config["timezone"],
-                       department=config["department"], today=department_today(config))
+                       department=config["department"], **booking_clock(config))
 
     @app.post("/api/login")
     def login():

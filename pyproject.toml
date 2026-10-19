@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bronylab"
-version = "0.2.1"
+version = "0.2.2"
 description = "Equipment booking for a university laboratory"
 requires-python = ">=3.11"
 dependencies = ["Flask==3.1.3", "PyYAML==6.0.3", "waitress==3.0.2", "tzdata>=2025.2"]

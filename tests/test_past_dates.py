@@ -25,8 +25,9 @@ def test_date_boundary(lab, booking, date, allowed):
 def test_department_timezone(lab,booking,lab_clock,zone,utc_time,expected):
     lab_clock['now']=datetime.fromisoformat(utc_time)
     lab[0]['timezone']=zone
+    lab[0]['work_hours']={'start':'00:00','end':'23:59'}
     assert department_today(lab[0])==expected
-    assert lab[2].book({**booking,'date':expected})['action']=='BOOK'
+    assert lab[2].book({**booking,'date':expected,'start_time':'20:00','end_time':'21:00'})['action']=='BOOK'
 
 
 def test_midnight_rechecks_server_date(client,booking,lab_clock):

@@ -12,9 +12,9 @@
 
 | Данные | Путь |
 |---|---|
-| Исходники выпуска | `/opt/bronylab/releases/20261019-02/bronylab` |
+| Исходники выпуска | `/opt/bronylab/releases/20261019-03/bronylab` |
 | Текущий выпуск | `/opt/bronylab/current` |
-| Python-окружение приложения | `/opt/bronylab/venv-0.2.1` |
+| Python-окружение приложения | `/opt/bronylab/venv-0.2.2` |
 | Рабочая конфигурация | `/etc/bronylab/config.yaml` |
 | Защищённые переменные окружения | `/etc/bronylab/bronylab.env` |
 | База данных | `/var/lib/bronylab/bronylab.sqlite3` |
@@ -40,7 +40,7 @@ systemctl reload nginx
 После изменения YAML перезапустите приложение. Для нового пользователя сначала добавьте его в `users` или `admin_users`, затем:
 
 ```bash
-/opt/bronylab/venv-0.2.1/bin/bronylab set-password --config /etc/bronylab/config.yaml --user USER_ID
+/opt/bronylab/venv-0.2.2/bin/bronylab set-password --config /etc/bronylab/config.yaml --user USER_ID
 systemctl restart bronylab
 ```
 
@@ -86,3 +86,8 @@ journalctl -u bronylab-backup.service -n 20 --no-pager
 ## Обновление 0.2.1
 
 Запрещено создавать новые брони на прошедшие даты по часовому поясу подразделения. Защита действует в форме, веб-API, CLI и dry-run. История не удаляется. Исполняемый файл сервиса — `/opt/bronylab/venv-0.2.1/bin/python`; перед переключением сохраняется `/var/backups/bronylab/pre-date-update.sqlite3`. Изменений схемы в этом выпуске нет. Исходники опубликованы в [GitHub-репозитории](https://github.com/Pozdnyakov-Artem/Bron-_lab).
+
+
+## Обновление 0.2.2
+
+Проверено: часы VPS синхронизированы через NTP, системный часовой пояс UTC; приложение использует Asia/Novosibirsk и показывает UTC+7 независимо от системной зоны. Добавлен запрет уже наступившего времени начала (PAST_TIME), часы в интерфейсе и граница ближайшей будущей минуты для формы. Исполняемый файл сервиса — /opt/bronylab/venv-0.2.2/bin/python; отдельная резервная копия — /var/backups/bronylab/pre-time-update.sqlite3. Схема базы не меняется.

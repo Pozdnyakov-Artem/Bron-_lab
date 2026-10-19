@@ -12,7 +12,7 @@ from bronylab.web import create_app
 def lab_clock(monkeypatch):
     """Keep fixtures independent of the real date; tests can advance the clock."""
     from bronylab import service
-    moment = {"now": datetime(2026, 10, 6, 5, tzinfo=timezone.utc)}
+    moment = {"now": datetime(2026, 10, 6, 1, tzinfo=timezone.utc)}
     class FrozenDatetime(datetime):
         @classmethod
         def now(cls, tz=None):
